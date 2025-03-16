@@ -1,0 +1,22 @@
+a{
+    background-color: green;
+    align-items: center;
+    color:white;
+    border-color: none;
+}
+button{
+    background-color: green;
+    width:max-content;
+    height:30px;
+    font-size:medium;
+    border-radius: 8px;
+    border-color: none;
+
+}
+.divclass{
+    align-items: center;
+    padding-left: 30px;
+    position: center;
+}
+
+

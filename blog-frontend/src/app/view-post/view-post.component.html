@@ -1,0 +1,41 @@
+<div class="container-fluid">
+    <div class=" center-card" *ngFor="let p of posts">
+      <div class="card-body">
+        <div >
+          <tbody>
+              <tr>
+                 <img *ngIf="p.img" [src]="p.img" alt="Post Image" />
+                <span *ngIf="!p.img">No Image Available</span>
+              </tr>
+              <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.name }}</td>
+              </tr>
+              <tr>
+
+            </tr>
+            
+           
+            <tr>
+              <td>Content</td>
+              <td>{{ p.content }}</td>
+            </tr>
+            <tr>
+              <td>PostedBy</td>
+              <td>{{ p.postedBy }}</td>
+            </tr>
+            <tr>`
+              <td>likeCount</td>
+              <td>{{ p.likeCount }}</td>
+            </tr>
+            
+            <tr>
+              <td>Date</td>
+              <td>{{ p.date }}</td>
+            </tr>
+          </tbody>
+        </div>
+      </div>
+    </div>
+  </div>
+  
