@@ -4,20 +4,19 @@ import { Observable } from 'rxjs';
 
 export interface Post {
   id?: string;
-  name: string;
+  title: string;
   content: string;
-  img: string;
-  postedBy: string;
-  date: string;
-  likeCount: number;
-  tags: string[];
+  author: string;
+  createdAt: Date;
+  tags?: string[];
+  imageUrl?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class BlogServiceService {
-  private apiUrl = 'http://localhost:8080/posts'; 
+  private apiUrl = 'http://localhost:8080/api/posts'; 
 
   constructor(private http: HttpClient) {}
 

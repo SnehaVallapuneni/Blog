@@ -1,41 +1,70 @@
-<div class="container-fluid">
-    <div class=" center-card" *ngFor="let p of posts">
-      <div class="card-body">
-        <div >
-          <tbody>
-              <tr>
-                 <img *ngIf="p.img" [src]="p.img" alt="Post Image" />
-                <span *ngIf="!p.img">No Image Available</span>
-              </tr>
-              <tr>
-                <td>{{ p.id }}</td>
-                <td>{{ p.name }}</td>
-              </tr>
-              <tr>
+<div class="container">
+  <!-- Posts List View (No Image) -->
+  <div *ngIf="!postId" class="posts-list">
+    <div class="header">
+      <h1>All Posts</h1>
+      <a routerLink="/create-post" class="create-post-btn">Create New Post</a>
+    </div>
 
-            </tr>
-            
-           
-            <tr>
-              <td>Content</td>
-              <td>{{ p.content }}</td>
-            </tr>
-            <tr>
-              <td>PostedBy</td>
-              <td>{{ p.postedBy }}</td>
-            </tr>
-            <tr>`
-              <td>likeCount</td>
-              <td>{{ p.likeCount }}</td>
-            </tr>
-            
-            <tr>
-              <td>Date</td>
-              <td>{{ p.date }}</td>
-            </tr>
-          </tbody>
+    <div class="posts-grid">
+      <div *ngFor="let post of posts" class="post-card">
+        <div class="post-content">
+          <h2>{{ post.title }}</h2>
+          <p class="excerpt">{{ post.content | slice:0:150 }}...</p>
+          <div class="post-meta">
+            <span class="author">By {{ post.author }}</span>
+            <span class="date">{{ post.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="post-tags" *ngIf="post.tags?.length">
+            <span class="tag" *ngFor="let tag of post.tags">{{ tag }}</span>
+          </div>
+          <div class="post-actions">
+            <button class="view-btn" (click)="viewPostDetails(post.id!)">View Details</button>
+            <button class="delete-btn" (click)="openDeleteDialog(post.id!)">Delete</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  
+
+  <!-- Individual Post View (With Image) -->
+  <div *ngIf="postId && post" class="post-detail">
+    <div class="post-header">
+      <button class="back-button" (click)="goBack()">
+        <span class="back-arrow">←</span> Back to Posts
+      </button>
+      <div class="post-meta">
+        <span class="author">By {{ post.author }}</span>
+        <span class="date">{{ post.createdAt | date:'mediumDate' }}</span>
+      </div>
+    </div>
+
+    <div class="post-content">
+      <h1 class="post-title">{{ post.title }}</h1>
+      
+      <!-- Image is only visible in detailed view -->
+      <div class="post-image" *ngIf="post.imageUrl">
+        <img [src]="post.imageUrl" [alt]="post.title">
+      </div>
+
+      <div class="post-text">
+        {{ post.content }}
+      </div>
+
+      <div class="post-tags" *ngIf="post.tags?.length">
+        <span class="tag" *ngFor="let tag of post.tags">{{ tag }}</span>
+      </div>
+
+      <div class="post-actions">
+        <button class="delete-btn" (click)="openDeleteDialog(post.id!)">Delete Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Dialog -->
+  <app-delete-dialog
+    *ngIf="showDeleteDialog"
+    (confirm)="onDeleteConfirm()"
+    (cancel)="onDeleteCancel()">
+  </app-delete-dialog>
+</div>

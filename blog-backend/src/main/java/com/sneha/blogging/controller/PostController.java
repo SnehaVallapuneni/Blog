@@ -46,7 +46,18 @@ public class PostController {
 		catch(Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getPostById(@PathVariable Long id) {
+		try {
+			Post post = ps.getPostById(id);
+			return ResponseEntity.status(HttpStatus.OK).body(post);
 		}
+		catch(Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found with id: " + id);
+		}
+	}
 	
 	@PutMapping
 	public ResponseEntity<?> updatePost(@RequestBody Post post){

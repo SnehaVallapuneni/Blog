@@ -1,143 +1,114 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BlogServiceService, Post } from '../blog-service.service';
+import { Subscription } from 'rxjs';
+import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-view-post',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
-    <div class="view-post-container">
-      <div class="post-header">
-        <a routerLink="/posts" class="back-link">&larr; Back to Posts</a>
-        <h1>{{ post?.name }}</h1>
-        <div class="post-meta">
-          <span class="author">By {{ post?.postedBy }}</span>
-          <span class="date">{{ post?.date | date }}</span>
-        </div>
-      </div>
-
-      <div class="post-content">
-        <img *ngIf="post?.img" [src]="post?.img" [alt]="post?.name" class="post-image">
-        <p>{{ post?.content }}</p>
-      </div>
-
-      <div class="post-footer">
-        <div class="tags" *ngIf="post?.tags?.length">
-          <span class="tag" *ngFor="let tag of post?.tags">{{ tag }}</span>
-        </div>
-        <div class="likes">
-          <button class="btn btn-primary" (click)="likePost()">
-            ❤️ {{ post?.likeCount || 0 }} Likes
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .view-post-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: var(--text-light);
-      text-decoration: none;
-    }
-
-    .back-link:hover {
-      color: var(--primary-color);
-    }
-
-    .post-header {
-      margin-bottom: 2rem;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      color: var(--primary-color);
-      margin-bottom: 1rem;
-    }
-
-    .post-meta {
-      color: var(--text-light);
-      font-size: 0.9rem;
-    }
-
-    .post-meta span {
-      margin-right: 1rem;
-    }
-
-    .post-image {
-      width: 100%;
-      max-height: 400px;
-      object-fit: cover;
-      border-radius: var(--border-radius);
-      margin-bottom: 2rem;
-    }
-
-    .post-content {
-      line-height: 1.8;
-      margin-bottom: 2rem;
-    }
-
-    .post-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .tags {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .tag {
-      background: var(--background-color);
-      padding: 0.25rem 0.75rem;
-      border-radius: 15px;
-      font-size: 0.9rem;
-    }
-  `]
+  imports: [CommonModule, RouterLink, DeleteDialogComponent],
+  templateUrl: './view-post.component.html',
+  styleUrls: ['./view-post.component.css']
 })
-export class ViewPostComponent implements OnInit {
-  post?: Post;
+export class ViewPostComponent implements OnInit, OnDestroy {
+  posts: Post[] = [];
+  post: Post | null = null;
+  postId: string | null = null;
+  showDeleteDialog = false;
+  postToDelete: string | null = null;
+  isLoading = true;
+  private routeSubscription: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private blogService: BlogServiceService
   ) {}
 
   ngOnInit() {
-    this.route.params.subscribe(params => {
-      const id = params['id'];
-      this.blogService.getPost(id).subscribe({
-        next: (post: Post) => {
-          this.post = post;
-        },
-        error: (error: Error) => {
-          console.error('Error fetching post:', error);
-        }
-      });
+    // Subscribe to route parameter changes
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      this.postId = params.get('id');
+      this.isLoading = true;
+      
+      if (this.postId) {
+        this.loadPost(this.postId);
+      } else {
+        this.loadPosts();
+      }
     });
   }
 
-  likePost() {
-    if (this.post && this.post.id) {
-      this.post.likeCount = (this.post.likeCount || 0) + 1;
-      this.blogService.updatePost(this.post).subscribe({
-        error: (error: Error) => {
-          console.error('Error updating likes:', error);
+  ngOnDestroy() {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+  }
+
+  private loadPost(id: string) {
+    this.blogService.getPost(id).subscribe({
+      next: (post: Post) => {
+        this.post = post;
+        this.isLoading = false;
+      },
+      error: (error: Error) => {
+        console.error('Error fetching post:', error);
+        this.router.navigate(['/view-post']);
+      }
+    });
+  }
+
+  loadPosts() {
+    this.blogService.getPosts().subscribe({
+      next: (posts: Post[]) => {
+        this.posts = posts;
+        this.isLoading = false;
+      },
+      error: (error: Error) => {
+        console.error('Error fetching posts:', error);
+      }
+    });
+  }
+
+  openDeleteDialog(id: string) {
+    this.postToDelete = id;
+    this.showDeleteDialog = true;
+  }
+
+  onDeleteConfirm() {
+    if (this.postToDelete) {
+      this.blogService.deletePost(this.postToDelete).subscribe({
+        next: () => {
+          console.log('Post deleted successfully');
+          // Remove the deleted post from the local array
+          this.posts = this.posts.filter(post => post.id !== this.postToDelete);
+          if (this.post?.id === this.postToDelete) {
+            this.router.navigate(['/view-post']);
+          }
+          // Refresh the posts list
+          this.loadPosts();
+        },
+        error: (error) => {
+          console.error('Error deleting post:', error);
         }
       });
     }
+    this.showDeleteDialog = false;
+    this.postToDelete = null;
+  }
+
+  onDeleteCancel() {
+    this.showDeleteDialog = false;
+    this.postToDelete = null;
+  }
+
+  viewPostDetails(id: string): void {
+    this.router.navigate(['/view-post', id]);
+  }
+
+  goBack() {
+    this.router.navigate(['/view-post']);
   }
 }

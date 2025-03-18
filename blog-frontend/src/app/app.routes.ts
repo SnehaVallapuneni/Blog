@@ -6,11 +6,12 @@ import { CreatePostComponent } from './create-post/create-post.component';
 import { LoginPageComponent } from './login-page/login-page.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
+  { path: 'view-post', component: ViewPostComponent },
   { path: 'view-post/:id', component: ViewPostComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'create-post', component: CreatePostComponent },
   { path: 'login', component: LoginPageComponent },
-  { path: '**', redirectTo: '/home' }
+  { path: '**', redirectTo: '' }
 ]; 

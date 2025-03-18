@@ -64,4 +64,10 @@ public class PostServiceImpl implements PostService{
 		return "Deleted successfully";
 		
 	}
+
+	@Override
+	public Post getPostById(Long id) {
+		return pr.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + id));
+	}
 }
